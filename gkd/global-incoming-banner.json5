@@ -1,0 +1,30 @@
+// 贴到：GKD → 订阅 → 本地订阅 → 添加全局规则
+// 用来点桌面、通知栏上的「邀请你视频通话」，不要求微信正在当前页。
+{
+  key: 10,
+  name: '点微信来电横幅',
+  desc: '微信不在前台时，小米往往只弹出一条邀请横幅。先点开横幅，再由微信规则去点接听。',
+  enable: true,
+  matchAnyApp: true,
+  matchLauncher: true,
+  matchSystemApp: true,
+  matchTime: 20000,
+  actionMaximum: 6,
+  resetMatch: 'activity',
+  rules: [
+    {
+      key: 0,
+      name: '点邀请你视频通话',
+      fastQuery: true,
+      actionDelay: 300,
+      matches: '[text*="邀请你视频通话"][visibleToUser=true]',
+    },
+    {
+      key: 1,
+      name: '点邀请你语音通话',
+      fastQuery: true,
+      actionDelay: 300,
+      matches: '[text*="邀请你语音通话"][visibleToUser=true]',
+    },
+  ],
+}

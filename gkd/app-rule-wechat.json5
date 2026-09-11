@@ -1,0 +1,52 @@
+// 贴到：GKD → 订阅 → 本地订阅 → 添加应用规则
+// 如果列表里已经有「微信」，先删掉再贴这一份。
+{
+  id: 'com.tencent.mm',
+  name: '微信',
+  groups: [
+    {
+      key: 1,
+      name: '自动接听语音和视频',
+      desc: '不限制微信页面。全屏接听按钮、顶部「邀请你视频通话」横幅都会点。',
+      enable: true,
+      rules: [
+        {
+          key: 0,
+          name: '点带接听字样的按钮',
+          fastQuery: true,
+          actionDelay: 400,
+          matches: '[desc*="接听"][visibleToUser=true]',
+        },
+        {
+          key: 1,
+          name: '点文字接听',
+          fastQuery: true,
+          actionDelay: 400,
+          matches: '[text="接听"][visibleToUser=true]',
+        },
+        {
+          key: 2,
+          name: '点邀请你视频通话',
+          fastQuery: true,
+          actionDelay: 400,
+          matches: '[text*="邀请你视频通话"][visibleToUser=true]',
+        },
+        {
+          key: 3,
+          name: '点邀请你语音通话',
+          fastQuery: true,
+          actionDelay: 400,
+          matches: '[text*="邀请你语音通话"][visibleToUser=true]',
+        },
+        {
+          key: 4,
+          name: '打开扬声器',
+          preKeys: [0, 1, 2, 3],
+          fastQuery: true,
+          actionDelay: 500,
+          matches: '[desc*="扬声器"][visibleToUser=true]',
+        },
+      ],
+    },
+  ],
+}

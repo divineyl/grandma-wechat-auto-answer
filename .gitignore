@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+.venv/
+venv/
+*.pyc
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Do not commit installer binaries
+*.apk
+*.apks
+*.aab
+*.ipa

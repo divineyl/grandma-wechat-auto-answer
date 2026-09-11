@@ -1,0 +1,61 @@
+// 若你的 GKD 能添加整份订阅再用这个；否则用 app-rule-wechat.json5
+{
+  id: 20260908,
+  name: '奶奶微信自动接听',
+  version: 2,
+  author: 'grandma-wechat-auto-answer',
+  categories: [{ key: 0, name: '家人通话' }],
+  globalGroups: [],
+  apps: [
+    {
+      id: 'com.tencent.mm',
+      name: '微信',
+      groups: [
+        {
+          key: 1,
+          name: '自动接听语音和视频',
+          desc: '不限制微信页面。全屏接听按钮、顶部邀请横幅都会点。',
+          enable: true,
+          rules: [
+            {
+              key: 0,
+              name: '点带接听字样的按钮',
+              fastQuery: true,
+              actionDelay: 400,
+              matches: '[desc*="接听"][visibleToUser=true]',
+            },
+            {
+              key: 1,
+              name: '点文字接听',
+              fastQuery: true,
+              actionDelay: 400,
+              matches: '[text="接听"][visibleToUser=true]',
+            },
+            {
+              key: 2,
+              name: '点邀请你视频通话',
+              fastQuery: true,
+              actionDelay: 400,
+              matches: '[text*="邀请你视频通话"][visibleToUser=true]',
+            },
+            {
+              key: 3,
+              name: '点邀请你语音通话',
+              fastQuery: true,
+              actionDelay: 400,
+              matches: '[text*="邀请你语音通话"][visibleToUser=true]',
+            },
+            {
+              key: 4,
+              name: '打开扬声器',
+              preKeys: [0, 1, 2, 3],
+              fastQuery: true,
+              actionDelay: 500,
+              matches: '[desc*="扬声器"][visibleToUser=true]',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
