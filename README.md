@@ -74,7 +74,7 @@ scripts/        校验 GKD 规则是否仍能解析
 
 ## English
 
-**grandma-wechat-auto-answer** is a small, family-device toolkit for Android (tested on Xiaomi tablets):
+**wechat-auto-answer** is a small, family-device toolkit for Android (tested on Xiaomi tablets):
 
 - Primary path: an [AutoJs6](https://github.com/SuperMonster003/AutoJs6) script that listens for WeChat call notifications, brings WeChat to the foreground, taps **Answer**, and tries to enable the speaker.
 - Optional path: [GKD](https://github.com/gkd-kit/gkd) click rules, which only work when the Answer button is already on screen.

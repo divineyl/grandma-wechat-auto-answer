@@ -1,5 +1,5 @@
 /**
- * 奶奶微信：来电自动全屏接听（AutoJs6）
+ * 微信来电自动全屏接听（AutoJs6）
  * 用主线程轮询点「接听」，避免后台线程点不动。
  */
 
@@ -265,4 +265,4 @@ setInterval(function () {
 }, 400);
 
 toast("全屏自动接听运行中");
-log("grandma auto-answer started");
+log("wechat auto-answer started");
