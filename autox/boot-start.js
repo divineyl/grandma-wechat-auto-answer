@@ -1,6 +1,7 @@
 /**
  * 开机/AutoJs6 启动后拉起全屏接听脚本。
  * 若主脚本已在运行，不会再开一份。
+ * 本文件自己不点屏幕，也不打开聊天。主脚本的安全开关仍然有效。
  */
 var MAIN = files.join(files.cwd(), "auto-answer-fullscreen.js");
 if (!files.exists(MAIN)) {
