@@ -1,11 +1,13 @@
 /**
  * 微信来电自动全屏接听（AutoJs6）
  * 用主线程轮询点「接听」，避免后台线程点不动。
+ * 开始前先做设置检查。没通过就不接听，也不在这里新增点击。
  */
 
 var WECHAT = "com.tencent.mm";
 var pendingUntil = 0;
 var lastToastAt = 0;
+var autoAnswerAllowed = false;
 
 function waitAccessibility() {
     var i = 0;
@@ -14,6 +16,45 @@ function waitAccessibility() {
         i++;
     }
     auto.waitFor();
+}
+
+var preflightDecision = null;
+var preflightRefusal = "";
+try {
+    var preflightFile = files.join(files.cwd(), "preflight.js");
+    if (!files.exists(preflightFile)) {
+        preflightFile = files.join("/sdcard/脚本", "preflight.js");
+    }
+    if (!files.exists(preflightFile)) {
+        preflightRefusal = "还不能自动接听：找不到 preflight.js。请把它和接听脚本放在同一个文件夹，再重新运行。";
+    } else {
+        eval(files.read(preflightFile));
+        preflightDecision = Preflight.resolvePreflight(Preflight.createAndroidBridge());
+        if (preflightDecision && preflightDecision.ok === true) {
+            autoAnswerAllowed = true;
+        }
+    }
+} catch (preflightError) {
+    if (autoAnswerAllowed !== true) {
+        preflightRefusal = "还不能自动接听：设置检查没做完。请重新运行。还不行就让家人确认无障碍和通知使用权已经打开。";
+    }
+}
+
+if (autoAnswerAllowed !== true) {
+    try {
+        if (preflightDecision && preflightDecision.ok !== true && typeof Preflight !== "undefined" && Preflight.showPreflightRefusal) {
+            Preflight.showPreflightRefusal(preflightDecision);
+        } else if (preflightRefusal) {
+            toast(preflightRefusal);
+        } else {
+            toast("还不能自动接听。请让家人打开无障碍和通知使用权后再运行。");
+        }
+    } catch (showError) {
+        try {
+            toast("还不能自动接听。请让家人打开无障碍和通知使用权后再运行。");
+        } catch (toastError) {}
+    }
+    exit();
 }
 
 waitAccessibility();
@@ -181,6 +222,9 @@ function wakeAndOpenWeChat(n) {
 }
 
 function tryAnswerOnce() {
+    if (autoAnswerAllowed !== true) {
+        return false;
+    }
     if (!auto.service) {
         var now = Date.now();
         if (now - lastToastAt > 8000) {
@@ -218,6 +262,9 @@ function tryAnswerOnce() {
 }
 
 function onMaybeCall(n) {
+    if (autoAnswerAllowed !== true) {
+        return;
+    }
     try {
         if (!n) {
             return;
