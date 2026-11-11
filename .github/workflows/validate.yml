@@ -17,3 +17,24 @@ jobs:
         run: pip install -r requirements.txt
       - name: Validate GKD json5
         run: python scripts/validate_gkd.py
+
+  access-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Syntax-check access watch
+        run: |
+          node --check autox/access-watch.js
+          node --check autox/auto-answer-fullscreen.js
+          node --check autox/boot-start.js
+          node --check autox/open-wechat-on-call.js
+      - name: Test access watch
+        run: node --test tests/access-watch.test.js
+      - name: Test access watch wiring
+        run: python -m unittest tests.test_access_watch_wiring -v

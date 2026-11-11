@@ -2,7 +2,9 @@
 
 脚本本身不会在点「停止」或关机后自己复活。要靠 AutoJs6 的**定时任务 + 小米自启动**。设一次即可。
 
-先保证 `auto-answer-fullscreen.js` 能手动运行并接听，再做下面这些。
+先保证 `auto-answer-fullscreen.js` 能手动运行并接听，再做下面这些。`access-watch.js` 要一直和它放在同一个文件夹。
+
+如果平板弹出「自动接听已经停了」，先按提示把无障碍和通知使用权重新打开，再运行一次主脚本。只做开机任务不会把这次停掉的接听重新打开。
 
 ## 1. 设为开机和打开软件时自动跑
 
@@ -31,7 +33,7 @@ AutoJs6 里打开 **设置**：
 
 不想让家里桌面上出现 AutoJs6、也不想进软件点运行：
 
-1. AutoJs6 里选中 `auto-answer-fullscreen.js` → **打包**
+1. 确认 `access-watch.js` 和 `auto-answer-fullscreen.js` 在同一个文件夹，再在 AutoJs6 里选中 `auto-answer-fullscreen.js` → **打包**
 2. 应用名可填「微信接听」
 3. 打开 **开机自启动**
 4. 打开 **前台服务**（后台不容易被杀）

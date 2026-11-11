@@ -1,11 +1,11 @@
 /**
  * 微信来电自动全屏接听（AutoJs6）
  * 用主线程轮询点「接听」，避免后台线程点不动。
+ * 运行中如果无障碍或通知使用权没了，就停下来，不再点屏幕。
  */
 
 var WECHAT = "com.tencent.mm";
 var pendingUntil = 0;
-var lastToastAt = 0;
 
 function waitAccessibility() {
     var i = 0;
@@ -17,6 +17,67 @@ function waitAccessibility() {
 }
 
 waitAccessibility();
+
+// 跑起来之后如果无障碍或通知使用权没了，就停下来，不再点屏幕。
+var answerTimer = null;
+var accessHost = null;
+var accessGuard = null;
+var accessWatchReady = false;
+try {
+    var accessWatchFile = files.join(files.cwd(), "access-watch.js");
+    if (!files.exists(accessWatchFile)) {
+        accessWatchFile = files.join("/sdcard/脚本", "access-watch.js");
+    }
+    if (!files.exists(accessWatchFile)) {
+        throw new Error("missing access-watch.js");
+    }
+    eval(files.read(accessWatchFile));
+    accessWatchReady = typeof AccessWatch !== "undefined" && !!AccessWatch.createGuard && !!AccessWatch.gate;
+} catch (accessWatchError) {
+    accessWatchReady = false;
+}
+if (accessWatchReady !== true) {
+    try {
+        toast("自动接听已经停了。找不到用来确认无障碍和通知使用权的文件，平板不会再点屏幕。请让家人把 access-watch.js 和接听脚本放在同一个文件夹，再重新运行。");
+    } catch (accessWatchToastError) {}
+    exit();
+}
+accessHost = AccessWatch.createAndroidHost();
+accessGuard = AccessWatch.createGuard({
+    onStop: function (decision) {
+        pendingUntil = 0;
+        try {
+            clearInterval(answerTimer);
+        } catch (clearTimerError) {}
+        try {
+            AccessWatch.showLostAccess(decision);
+        } catch (showLostError) {
+            try {
+                toast(AccessWatch.FALLBACK_MESSAGE);
+            } catch (fallbackToastError) {}
+        }
+        try {
+            exit();
+        } catch (exitError) {}
+    },
+});
+
+function accessStillAllows() {
+    var snapshot;
+    try {
+        snapshot = AccessWatch.readSnapshot(accessHost);
+    } catch (readError) {
+        snapshot = AccessWatch.unknownSnapshot();
+    }
+    try {
+        return AccessWatch.gate(accessGuard, snapshot, function () {
+            return true;
+        }) === true;
+    } catch (gateError) {
+        pendingUntil = 0;
+        return false;
+    }
+}
 
 function str(v) {
     if (v == null) {
@@ -47,6 +108,9 @@ function isCallText(s) {
 }
 
 function clickNode(node) {
+    if (!accessStillAllows()) {
+        return false;
+    }
     if (!node) {
         return false;
     }
@@ -55,13 +119,16 @@ function clickNode(node) {
             return true;
         }
     } catch (e) {}
+    if (!accessStillAllows()) {
+        return false;
+    }
     try {
         var b = node.bounds();
         if (b) {
             click(b.centerX(), b.centerY());
             return true;
         }
-    } catch (e) {}
+    } catch (e2) {}
     return false;
 }
 
@@ -99,6 +166,9 @@ function findAnswer() {
     if (n) {
         return n;
     }
+    if (!accessStillAllows()) {
+        return null;
+    }
     try {
         if (click("接听")) {
             return true;
@@ -134,15 +204,27 @@ function findBanner() {
 }
 
 function clickAnswerByPosition() {
+    if (!accessStillAllows()) {
+        return false;
+    }
     if (!findHangup()) {
         return false;
     }
     var w = device.width;
     var h = device.height;
+    if (!accessStillAllows()) {
+        return false;
+    }
     click(w * 0.75, h * 0.82);
     sleep(200);
+    if (!accessStillAllows()) {
+        return false;
+    }
     click(w * 0.78, h * 0.88);
     sleep(200);
+    if (!accessStillAllows()) {
+        return false;
+    }
     click(w * 0.70, h * 0.80);
     return true;
 }
@@ -155,17 +237,26 @@ function turnOnSpeaker() {
 }
 
 function wakeAndOpenWeChat(n) {
+    if (!accessStillAllows()) {
+        return;
+    }
     try {
         if (!device.isScreenOn()) {
             device.wakeUp();
             sleep(500);
         }
     } catch (e) {}
+    if (!accessStillAllows()) {
+        return;
+    }
     try {
         if (n) {
             n.click();
         }
-    } catch (e) {}
+    } catch (e2) {}
+    if (!accessStillAllows()) {
+        return;
+    }
     try {
         app.launchApp("微信");
     } catch (e) {}
@@ -181,12 +272,7 @@ function wakeAndOpenWeChat(n) {
 }
 
 function tryAnswerOnce() {
-    if (!auto.service) {
-        var now = Date.now();
-        if (now - lastToastAt > 8000) {
-            lastToastAt = now;
-            toast("无障碍被关掉了，请重新打开 AutoJs6");
-        }
+    if (!accessStillAllows()) {
         return false;
     }
     var banner = findBanner();
@@ -218,6 +304,9 @@ function tryAnswerOnce() {
 }
 
 function onMaybeCall(n) {
+    if (!accessStillAllows()) {
+        return;
+    }
     try {
         if (!n) {
             return;
@@ -230,6 +319,9 @@ function onMaybeCall(n) {
         if (!isCallText(t)) {
             return;
         }
+        if (!accessStillAllows()) {
+            return;
+        }
         toast("检测到微信来电，正在接听");
         pendingUntil = Date.now() + 20000;
         wakeAndOpenWeChat(n);
@@ -238,31 +330,33 @@ function onMaybeCall(n) {
     }
 }
 
-try {
-    events.observeNotification();
-} catch (e) {
-    toast("请打开通知使用权：关掉再打开 AutoJs6 那一项");
+if (accessStillAllows()) {
     try {
-        app.startActivity({
-            action: "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS",
-        });
-    } catch (e2) {}
-}
-
-events.onNotification(function (n) {
-    onMaybeCall(n);
-});
-events.on("notification", function (n) {
-    onMaybeCall(n);
-});
-
-setInterval(function () {
-    try {
-        tryAnswerOnce();
+        events.observeNotification();
     } catch (e) {
-        log(e);
+        toast("请打开通知使用权：关掉再打开 AutoJs6 那一项");
+        try {
+            app.startActivity({
+                action: "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS",
+            });
+        } catch (e2) {}
     }
-}, 400);
 
-toast("全屏自动接听运行中");
-log("wechat auto-answer started");
+    events.onNotification(function (n) {
+        onMaybeCall(n);
+    });
+    events.on("notification", function (n) {
+        onMaybeCall(n);
+    });
+
+    answerTimer = setInterval(function () {
+        try {
+            tryAnswerOnce();
+        } catch (e) {
+            log(e);
+        }
+    }, 400);
+
+    toast("全屏自动接听运行中");
+    log("wechat auto-answer started");
+}
