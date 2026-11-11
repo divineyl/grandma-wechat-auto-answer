@@ -18,11 +18,42 @@ function asText(value) {
   return String(value);
 }
 
+const TERMINAL_CALL_WORDS = ["未接", "未接通", "已结束", "已取消", "已拒绝", "已挂断", "通话结束", "通话时长", "对方已取消", "对方已拒绝"];
+
+function isTerminalCallText(text) {
+  if (!text) {
+    return false;
+  }
+  for (let i = 0; i < TERMINAL_CALL_WORDS.length; i++) {
+    if (text.indexOf(TERMINAL_CALL_WORDS[i]) >= 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function notificationText(n) {
-  return asText(n.getTitle()) + " " + asText(n.getText());
+  const parts = [];
+  try {
+    parts.push(asText(n.getTitle()));
+  } catch (err) {
+    log("读取通知标题失败: " + err);
+  }
+  try {
+    parts.push(asText(n.getText()));
+  } catch (err) {
+    log("读取通知内容失败: " + err);
+  }
+  try {
+    parts.push(asText(n.tickerText));
+  } catch (ignore) {}
+  return parts.join(" ");
 }
 
 function isIncomingCall(text) {
+  if (!text || isTerminalCallText(text)) {
+    return false;
+  }
   if (text.indexOf("邀请你视频通话") >= 0) {
     return true;
   }
@@ -39,18 +70,19 @@ function isIncomingCall(text) {
 }
 
 function openWeChatMiniWindow() {
-  const Intent = android.content.Intent;
-  const pm = context.getPackageManager();
-  const intent = pm.getLaunchIntentForPackage(WECHAT);
-  if (intent == null) {
-    return false;
-  }
-  intent.addFlags(
-    Intent.FLAG_ACTIVITY_NEW_TASK |
-      Intent.FLAG_ACTIVITY_REORDER_TO_FRONT |
-      Intent.FLAG_ACTIVITY_SINGLE_TOP
-  );
   try {
+    const Intent = android.content.Intent;
+    const pm = context.getPackageManager();
+    const intent = pm.getLaunchIntentForPackage(WECHAT);
+    if (intent == null) {
+      log("找不到微信的启动入口");
+      return false;
+    }
+    intent.addFlags(
+      Intent.FLAG_ACTIVITY_NEW_TASK |
+        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT |
+        Intent.FLAG_ACTIVITY_SINGLE_TOP
+    );
     const options = android.app.ActivityOptions.makeBasic();
     try {
       const method = options
@@ -84,27 +116,65 @@ function bringWeChatUp(n) {
     return;
   }
   try {
-    n.click();
-  } catch (ignore) {}
-  app.launchPackage(WECHAT);
-  toast("已打开微信");
+    if (n) {
+      n.click();
+    }
+  } catch (err) {
+    log("点击来电通知失败: " + err);
+  }
+  try {
+    app.launchPackage(WECHAT);
+    toast("已打开微信");
+  } catch (err) {
+    log("打开微信失败: " + err);
+    try {
+      toast("打开微信失败，请手动打开");
+    } catch (ignore) {}
+  }
 }
 
-try {
-  events.observeNotification();
-} catch (err) {
+function watchNotifications() {
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      events.observeNotification();
+      return;
+    } catch (err) {
+      lastErr = err;
+      log("监听通知失败，第" + attempt + "次: " + err);
+      if (attempt < 3) {
+        try {
+          sleep(1000);
+        } catch (ignore) {}
+      }
+    }
+  }
   toast("请打开「通知使用权」，再重新运行本脚本");
   try {
     app.startActivity({
       action: "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS",
     });
-  } catch (ignore) {}
-  throw err;
+  } catch (err) {
+    log("打开通知设置失败: " + err);
+  }
+  throw lastErr;
 }
+
+watchNotifications();
 
 events.on("notification", function (n) {
   try {
-    if (n.getPackageName() !== WECHAT) {
+    if (!n) {
+      return;
+    }
+    let pkg = "";
+    try {
+      pkg = n.getPackageName();
+    } catch (err) {
+      log("读取通知包名失败: " + err);
+      return;
+    }
+    if (pkg !== WECHAT) {
       return;
     }
     if (!isIncomingCall(notificationText(n))) {
