@@ -17,3 +17,15 @@ jobs:
         run: pip install -r requirements.txt
       - name: Validate GKD json5
         run: python scripts/validate_gkd.py
+      - name: Test GKD validator
+        run: python -m unittest discover -s tests -v
+
+  script-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test auto-answer failure handling
+        run: node --test tests/autox_logic.test.js
