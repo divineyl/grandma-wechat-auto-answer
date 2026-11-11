@@ -1,15 +1,18 @@
 // 贴到：GKD → 订阅 → 本地订阅 → 添加全局规则
 // 用来点桌面、通知栏上的「邀请你视频通话」，不要求微信正在当前页。
+// 安全默认：enable 是 false。确认是家人专用平板后，再打开这一条。
+// 只点短的邀请句。看见「发送」，或句子里已经是未接/已结束/已取消，就不点。
 {
   key: 10,
   name: '点微信来电横幅',
-  desc: '微信不在前台时，小米往往只弹出一条邀请横幅。先点开横幅，再由微信规则去点接听。',
-  enable: true,
+  desc: '默认关闭。微信不在前台时，小米往往只弹出一条邀请横幅。先点开横幅，再由来电界面规则点接听。',
+  enable: false,
   matchAnyApp: true,
   matchLauncher: true,
   matchSystemApp: true,
   matchTime: 20000,
-  actionMaximum: 6,
+  actionMaximum: 2,
+  actionCd: 3000,
   resetMatch: 'activity',
   rules: [
     {
@@ -17,14 +20,16 @@
       name: '点邀请你视频通话',
       fastQuery: true,
       actionDelay: 300,
-      matches: '[text*="邀请你视频通话"][visibleToUser=true]',
+      matches: '[text*="邀请你视频通话"][text!*="未接"][text!*="已结束"][text!*="已取消"][text.length<=24][visibleToUser=true]',
+      excludeMatches: '[text="发送"||desc="发送"][visibleToUser=true]',
     },
     {
       key: 1,
       name: '点邀请你语音通话',
       fastQuery: true,
       actionDelay: 300,
-      matches: '[text*="邀请你语音通话"][visibleToUser=true]',
+      matches: '[text*="邀请你语音通话"][text!*="未接"][text!*="已结束"][text!*="已取消"][text.length<=24][visibleToUser=true]',
+      excludeMatches: '[text="发送"||desc="发送"][visibleToUser=true]',
     },
   ],
 }
