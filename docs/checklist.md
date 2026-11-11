@@ -4,7 +4,16 @@
 
 测试时你坐在另一间房间或用自己的手机，平板放在老人平时会坐的位置。
 
-先完成 [getting-started.md](getting-started.md) 和 [keep-running.md](keep-running.md)。
+先完成 [getting-started.md](getting-started.md) 和 [keep-running.md](keep-running.md)。安全边界见 [SECURITY.md](../SECURITY.md)。
+
+## 出门前先看开关
+
+- [ ] 这是老人的专用平板，不是你每天用的手机
+- [ ] 脚本提示是「将接听所有微信来电」或「只接听名单中的联系人」，不是「自动接听未开启」
+- [ ] 如果提示是「将接听所有微信来电」，你接受陌生人打来也会接
+- [ ] 如果用了名单，你用名单里的人、再用一个不在名单里的号各打一次。后者必须不接
+- [ ] GKD 的接听规则是关的。只留 AutoJs6 这一套在点
+- [ ] 平板没有停在带「发送」按钮的聊天输入框上
 
 ## 测试 1：屏幕亮着、停在桌面
 

@@ -15,5 +15,5 @@ jobs:
           python-version: "3.12"
       - name: Install deps
         run: pip install -r requirements.txt
-      - name: Validate GKD json5
+      - name: Validate rules and safety rails
         run: python scripts/validate_gkd.py
