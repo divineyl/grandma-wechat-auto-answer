@@ -9,6 +9,15 @@
 - 用 `var` / 旧式 Auto.js API，避免只在 Node 里能跑的语法
 - 接听按钮文案因微信版本会变，改选择器时请写清你用的微信版本和机型
 
+## 运行中权限检查
+
+`autox/access-watch.js` 在主脚本已经运行之后确认无障碍和通知使用权。确认不了就停，不再点屏幕。改完后在仓库根目录执行：
+
+```bash
+node --test tests/access-watch.test.js
+python -m unittest tests.test_access_watch_wiring -v
+```
+
 ## 改 GKD 规则
 
 改完后在仓库根目录执行：

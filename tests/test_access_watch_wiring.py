@@ -90,6 +90,27 @@ class AccessWatchWiringTest(unittest.TestCase):
         self.assertIn("android.settings.ACCESSIBILITY_SETTINGS", WATCH)
         self.assertIn("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS", WATCH)
 
+    def test_docs_tell_the_family_that_answering_stopped(self) -> None:
+        docs = {
+            "README.md": ROOT / "README.md",
+            "autox": ROOT / "autox" / "README.md",
+            "started": ROOT / "docs" / "getting-started.md",
+            "trouble": ROOT / "docs" / "troubleshooting.md",
+            "checklist": ROOT / "docs" / "checklist.md",
+            "xiaomi": ROOT / "docs" / "xiaomi.md",
+            "keep": ROOT / "docs" / "keep-running.md",
+            "security": ROOT / "SECURITY.md",
+        }
+        text = {name: path.read_text(encoding="utf-8") for name, path in docs.items()}
+        for name in ("autox", "started", "trouble", "checklist", "xiaomi", "keep", "security"):
+            self.assertIn("自动接听已经停了", text[name], name)
+        for name in ("README.md", "autox", "started", "keep"):
+            self.assertIn("access-watch.js", text[name], name)
+        self.assertIn("不会再点屏幕", text["trouble"])
+        self.assertIn("通知使用权", text["trouble"])
+        self.assertNotIn("HyperOS", text["xiaomi"])
+        self.assertNotIn("澎湃", text["trouble"])
+
 
 if __name__ == "__main__":
     unittest.main()

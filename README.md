@@ -25,7 +25,7 @@ Auto-answer incoming WeChat voice/video calls on a family Android tablet using A
 | 步骤 | 说明 |
 | --- | --- |
 | 1 | 平板安装 [AutoJs6](https://github.com/SuperMonster003/AutoJs6/releases) |
-| 2 | 导入并运行 [`autox/auto-answer-fullscreen.js`](autox/auto-answer-fullscreen.js) |
+| 2 | 导入并运行 [`autox/auto-answer-fullscreen.js`](autox/auto-answer-fullscreen.js)。同目录的 [`autox/access-watch.js`](autox/access-watch.js) 要一起放在平板上 |
 | 3 | 打开无障碍、通知使用权 |
 | 4 | 设开机自动运行，并给 AutoJs6 / 微信做小米保活 |
 
@@ -76,7 +76,7 @@ scripts/        校验 GKD 规则是否仍能解析
 
 **wechat-auto-answer** is a small, family-device toolkit for Android (tested on Xiaomi tablets):
 
-- Primary path: an [AutoJs6](https://github.com/SuperMonster003/AutoJs6) script that listens for WeChat call notifications, brings WeChat to the foreground, taps **Answer**, and tries to enable the speaker.
+- Primary path: an [AutoJs6](https://github.com/SuperMonster003/AutoJs6) script that listens for WeChat call notifications, brings WeChat to the foreground, taps **Answer**, and tries to enable the speaker. If accessibility or notification access disappears while it is running, it stops and does not keep tapping.
 - Optional path: [GKD](https://github.com/gkd-kit/gkd) click rules, which only work when the Answer button is already on screen.
 
 This is accessibility automation on hardware you own. It is not a remote-access trojan and it does not modify the WeChat APK.
